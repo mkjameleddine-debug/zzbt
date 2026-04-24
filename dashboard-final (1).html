@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Veille Appels d'Offres</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f9f6f1;
+  --white: #ffffff;
+  --ink: #1c1917;
+  --gold: #b07d2e;
+  --gold-light: #f5ead8;
+  --gold-border: #dcc89a;
+  --sage: #2d6652;
+  --sage-light: #e8f2ee;
+  --sage-border: #a8ccbe;
+  --muted: #78716c;
+  --border: #e8e2d8;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Outfit',sans-serif; background:var(--bg); color:var(--ink); max-width:480px; margin:0 auto; }
+
+/* HEADER */
+.hdr { background:var(--ink); padding:2.5rem 1.5rem 2rem; position:relative; overflow:hidden; }
+.hdr::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--gold),#e8c96a,var(--gold)); }
+.hdr-tag { font-size:.62rem; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:.85rem; font-weight:500; }
+.hdr-title { font-family:'Libre Baskerville',serif; font-size:1.8rem; font-weight:700; color:#fff; line-height:1.15; margin-bottom:.65rem; }
+.hdr-title em { font-style:italic; color:#dcc89a; }
+.hdr-sub { font-size:.8rem; color:rgba(255,255,255,.5); line-height:1.7; }
+.hdr-pills { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:1.1rem; }
+.pill { font-size:.6rem; padding:3px 9px; border-radius:20px; font-weight:500; }
+.pill-g { background:rgba(176,125,46,.2); color:var(--gold); border:1px solid rgba(176,125,46,.3); }
+.pill-s { background:rgba(45,102,82,.2); color:#6bbfa0; border:1px solid rgba(45,102,82,.3); }
+.pill-w { background:rgba(255,255,255,.07); color:rgba(255,255,255,.45); border:1px solid rgba(255,255,255,.1); }
+
+/* STATS */
+.stats { display:grid; grid-template-columns:1fr 1fr 1fr; background:var(--white); border-bottom:1px solid var(--border); }
+.stat { padding:.9rem .5rem; text-align:center; border-right:1px solid var(--border); }
+.stat:last-child { border-right:none; }
+.stat-val { font-family:'Libre Baskerville',serif; font-size:1.3rem; font-weight:700; color:var(--gold); }
+.stat-lbl { font-size:.58rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:.2rem; }
+
+/* INTRO */
+.intro { padding:1.5rem 1.25rem 1rem; }
+.intro-title { font-family:'Libre Baskerville',serif; font-size:1.05rem; margin-bottom:.4rem; }
+.intro-text { font-size:.76rem; color:var(--muted); line-height:1.75; }
+
+/* CARDS */
+.cards { padding:0 1.25rem 1.5rem; display:flex; flex-direction:column; gap:.75rem; }
+.card { background:var(--white); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,.04); }
+.card.h { border-left:4px solid var(--gold); }
+.card.m { border-left:4px solid var(--sage); }
+
+/* card header */
+.ch { padding:1rem 1rem .85rem; cursor:pointer; }
+.ch-top { display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem; margin-bottom:.6rem; }
+.ch-left { flex:1; }
+.cn { font-size:.58rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
+.cname { font-family:'Libre Baskerville',serif; font-size:.98rem; font-weight:700; color:var(--ink); margin-bottom:.15rem; }
+.curl { font-size:.6rem; color:var(--muted); font-family:monospace; }
+.ch-right { display:flex; flex-direction:column; align-items:flex-end; gap:.3rem; flex-shrink:0; }
+.ctag { font-size:.58rem; font-weight:600; padding:2px 8px; border-radius:20px; }
+.cfree { background:var(--sage-light); color:var(--sage); border:1px solid var(--sage-border); }
+.dots { display:flex; gap:3px; }
+.d { width:6px; height:6px; border-radius:1px; }
+.don { background:var(--gold); }
+.doff { background:var(--border); }
+.chev { font-size:.75rem; color:var(--muted); transition:transform .25s; }
+.chev.open { transform:rotate(180deg); }
+
+/* exemple réel tag */
+.ex-preview {
+  background:var(--gold-light);
+  border:1px solid var(--gold-border);
+  border-radius:8px;
+  padding:.55rem .75rem;
+  display:flex;
+  align-items:flex-start;
+  gap:.5rem;
+}
+.ex-icon { font-size:.8rem; flex-shrink:0; margin-top:.1rem; }
+.ex-text { font-size:.7rem; color:#6b4a10; line-height:1.55; }
+.ex-text strong { color:var(--ink); }
+
+/* card body */
+.cb { display:none; border-top:1px solid var(--border); }
+.cb.open { display:block; }
+.ib { padding:.85rem 1rem; border-bottom:1px solid var(--border); }
+.ib:last-child { border-bottom:none; }
+.il { font-size:.56rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:.35rem; }
+.il-why { color:var(--sage); }
+.il-ex { color:var(--gold); }
+.il-str { color:#2563eb; }
+.il-lim { color:#b84a2e; }
+.il-act { color:var(--ink); }
+.it { font-size:.77rem; line-height:1.75; color:#44403c; }
+
+/* exemple réel bloc */
+.ex-bloc {
+  background:var(--gold-light);
+  border-left:3px solid var(--gold);
+  padding:.75rem .85rem;
+  border-radius:0 6px 6px 0;
+  margin-top:.4rem;
+}
+.ex-title { font-size:.7rem; font-weight:700; color:var(--ink); margin-bottom:.3rem; }
+.ex-detail { font-size:.68rem; color:#6b4a10; line-height:1.6; }
+.ex-detail span { display:block; }
+
+.vbtn {
+  display:block; width:calc(100% - 2rem);
+  margin:.75rem 1rem 1rem;
+  padding:.7rem; background:var(--ink); color:white;
+  border:none; border-radius:10px;
+  font-family:'Outfit',sans-serif; font-size:.8rem; font-weight:600;
+  text-align:center; text-decoration:none; cursor:pointer;
+}
+
+/* TRUTH */
+.truth { margin:0 1.25rem 1.5rem; background:var(--ink); border-radius:14px; overflow:hidden; }
+.th { padding:1rem 1.25rem .75rem; border-bottom:1px solid rgba(255,255,255,.08); }
+.th-title { font-family:'Libre Baskerville',serif; font-size:.98rem; color:#fff; margin-bottom:.2rem; }
+.th-sub { font-size:.7rem; color:rgba(255,255,255,.4); line-height:1.6; }
+.ti { padding:.9rem 1.25rem; border-bottom:1px solid rgba(255,255,255,.06); display:flex; gap:.75rem; align-items:flex-start; }
+.ti:last-child { border-bottom:none; }
+.ti-ico { font-size:1rem; flex-shrink:0; margin-top:.1rem; }
+.ti-txt { font-size:.75rem; color:rgba(255,255,255,.58); line-height:1.7; }
+.ti-txt strong { color:rgba(255,255,255,.9); }
+
+/* NEXT */
+.next { margin:0 1.25rem 2rem; background:var(--gold-light); border:1px solid var(--gold-border); border-radius:14px; padding:1.25rem; }
+.next-title { font-family:'Libre Baskerville',serif; font-size:.98rem; color:var(--ink); margin-bottom:.85rem; }
+.nsteps { display:flex; flex-direction:column; gap:.55rem; }
+.ns { display:flex; gap:.7rem; align-items:flex-start; }
+.nsn { width:21px; height:21px; border-radius:6px; background:var(--gold); color:white; font-size:.62rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.nst { font-size:.76rem; line-height:1.6; color:#44403c; }
+.nst strong { color:var(--ink); }
+
+/* FOOTER */
+.ftr { background:var(--ink); padding:1.25rem; text-align:center; }
+.ftr-txt { font-size:.62rem; color:rgba(255,255,255,.3); letter-spacing:1px; text-transform:uppercase; line-height:1.8; }
+.ftr-gold { color:var(--gold); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.card:nth-child(1){animation:fadeUp .4s ease .05s both}
+.card:nth-child(2){animation:fadeUp .4s ease .1s both}
+.card:nth-child(3){animation:fadeUp .4s ease .15s both}
+.card:nth-child(4){animation:fadeUp .4s ease .2s both}
+.card:nth-child(5){animation:fadeUp .4s ease .25s both}
+.card:nth-child(6){animation:fadeUp .4s ease .3s both}
+.card:nth-child(7){animation:fadeUp .4s ease .35s both}
+.card:nth-child(8){animation:fadeUp .4s ease .4s both}
+.card:nth-child(9){animation:fadeUp .4s ease .45s both}
+.card:nth-child(10){animation:fadeUp .4s ease .5s both}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-tag">Veille · Appels d'Offres</div>
+  <h1 class="hdr-title">Vos sources<br><em>sélectionnées</em></h1>
+  <p class="hdr-sub">Les 10 meilleures plateformes pour vos 3 domaines — avec des exemples réels d'opportunités publiées récemment.</p>
+  <div class="hdr-pills">
+    <span class="pill pill-g">🇹🇳 Tunisie</span>
+    <span class="pill pill-s">🌍 Afrique</span>
+    <span class="pill pill-w">Conseil · Formation · Études</span>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-val">10</div><div class="stat-lbl">Sources</div></div>
+  <div class="stat"><div class="stat-val">100%</div><div class="stat-lbl">Gratuit</div></div>
+  <div class="stat"><div class="stat-val">J+7</div><div class="stat-lbl">Opérationnel</div></div>
+</div>
+
+<div class="intro">
+  <div class="intro-title">Appuyez sur une source pour voir les détails</div>
+  <div class="intro-text">Chaque fiche contient : pourquoi cette source a été choisie, un exemple réel d'appel d'offres publié récemment, et le lien direct pour y accéder.</div>
+</div>
+
+<div class="cards">
+
+  <!-- 1 JAMAITY -->
+  <div class="card h" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">01 · Priorité haute ⭐</div>
+          <div class="cname">Jamaity</div>
+          <div class="curl">jamaity.org</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> Formation gouvernance locale pour conseils régionaux du sud tunisien — Conseil de l'Europe · Tunis 2026</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">Jamaity est la référence des ONG et organisations internationales en Tunisie. Elle publie chaque jour des appels d'offres en conseil, gouvernance, formation et évaluation — exactement vos 3 domaines. Peu connue des cabinets concurrents : avantage direct.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Exemples réels publiés sur Jamaity</div>
+        <div class="ex-bloc">
+          <div class="ex-title">🏛️ Conseil de l'Europe · Tunis 2026</div>
+          <div class="ex-detail">
+            <span>Projet AGELA — Amélioration de la gouvernance économique et lutte anticorruption en Tunisie</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Formation, conseil juridique et institutionnel · Financement UE + Conseil de l'Europe</span>
+          </div>
+        </div>
+        <div class="ex-bloc" style="margin-top:.5rem;">
+          <div class="ex-title">🎓 CIPE · Ambassade USA · Tunis</div>
+          <div class="ex-detail">
+            <span>Mission cabinet-conseil — Développement modules de formation en bonne gouvernance, secteur santé</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Diagnostic + formation + livrables · Cabinet ou expert · Financement américain</span>
+          </div>
+        </div>
+        <div class="ex-bloc" style="margin-top:.5rem;">
+          <div class="ex-title">📋 OIM + OIT · Tunisie</div>
+          <div class="ex-detail">
+            <span>Mission cabinet-conseil — Gouvernance de la mobilité du travail, feuille de route nationale</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Consultations nationales + livrables stratégiques · Tunis</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Mise à jour quotidienne · Expertise France + ONG internationales · Missions gouvernance, formation, évaluation · Gratuit · Très peu connu des concurrents</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Principalement centré sur la Tunisie. Certaines missions ciblent des experts individuels plutôt que des cabinets.</div>
+      </div>
+      <a class="vbtn" href="https://jamaity.org/appels-doffres" target="_blank">Voir les appels d'offres →</a>
+    </div>
+  </div>
+
+  <!-- 2 COORDINATION SUD -->
+  <div class="card h" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">02 · Priorité haute ⭐</div>
+          <div class="cname">Coordination SUD</div>
+          <div class="curl">coordinationsud.org</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> Consultant gouvernance et procédures administratives pour ONG Guinée — CCFD-Terre Solidaire 2026</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">Portail de référence des ONG françaises opérant en Afrique. Publie chaque jour des missions en conseil, gouvernance, audit et formation. Source privée très peu surveillée par les cabinets concurrents — avantage concurrentiel direct et immédiat.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Exemples réels publiés sur Coordination SUD</div>
+        <div class="ex-bloc">
+          <div class="ex-title">📋 CCFD-Terre Solidaire · Guinée 2026</div>
+          <div class="ex-detail">
+            <span>Consultant pour actualisation du manuel de procédures administratives, financières et de gouvernance</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Mission courte · Gouvernance ONG · Afrique de l'Ouest</span>
+          </div>
+        </div>
+        <div class="ex-bloc" style="margin-top:.5rem;">
+          <div class="ex-title">🌿 ALIMA · Afrique 2026</div>
+          <div class="ex-detail">
+            <span>Consultant bilan carbone et gouvernance environnementale</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Audit + conseil stratégique · ONG médicale internationale</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Mise à jour quotidienne · ONG françaises + internationales · Parfaitement aligné sur vos 3 domaines · Gratuit · Très peu connu = moins de concurrence</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Certaines missions en anglais. Taille moyenne principalement. Afrique francophone et Maghreb bien couverts.</div>
+      </div>
+      <a class="vbtn" href="https://www.coordinationsud.org/appels-doffres" target="_blank">Voir les appels d'offres →</a>
+    </div>
+  </div>
+
+  <!-- 3 GIZ -->
+  <div class="card h" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">03 · Priorité haute</div>
+          <div class="cname">GIZ Afrique</div>
+          <div class="curl">giz.de</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d doff"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> Capacity Building — AfCFTA framework pour institutions gouvernementales africaines · GIZ Ghana 2025</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">L'agence allemande de coopération, très présente en Afrique, publie directement ses appels d'offres en gouvernance, formation et renforcement des capacités. Source directe = pas d'intermédiaire. Missions bien financées par le gouvernement allemand et l'UE.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Exemples réels GIZ</div>
+        <div class="ex-bloc">
+          <div class="ex-title">🏛️ GIZ Ghana · Afrique 2025</div>
+          <div class="ex-detail">
+            <span>Consultancy Services — Capacity Building sur le cadre AfCFTA pour institutions gouvernementales</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Renforcement capacités · Commerce africain · Gouvernance</span>
+          </div>
+        </div>
+        <div class="ex-bloc" style="margin-top:.5rem;">
+          <div class="ex-title">🔬 GIZ Afrique du Sud · 2025</div>
+          <div class="ex-detail">
+            <span>Diagnostic Evaluation — Gouvernance et transition juste dans les zones minières</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Évaluation + conseil stratégique · Financement GIZ/UE</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Source directe du donneur d'ordre · Missions gouvernance, formation, évaluation · Présente en Tunisie et toute l'Afrique · Budgets solides</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Publications par pays — surveiller les pages Tunisie, Maroc, Afrique de l'Ouest. Souvent en anglais.</div>
+      </div>
+      <a class="vbtn" href="https://www.giz.de/en/workingwithgiz/tenders.html" target="_blank">Voir les appels GIZ →</a>
+    </div>
+  </div>
+
+  <!-- 4 EXPERTISE FRANCE -->
+  <div class="card h" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">04 · Priorité haute</div>
+          <div class="cname">Expertise France</div>
+          <div class="curl">expertisefrance.fr</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d doff"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> Expert formation professionnelle & dialogue public-privé — Partenariat Franco-Tunisien · Tunis 2025, 34 mois</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">Agence française de coopération technique, très active en Tunisie. La Tunisie est l'un de leurs pays prioritaires. Publie régulièrement des missions en conseil, gouvernance, formation et évaluation — parfaitement dans vos domaines. Aggréé sur Jamaity.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Exemples réels Expertise France — Tunisie</div>
+        <div class="ex-bloc">
+          <div class="ex-title">🎓 Partenariat Franco-Tunisien · 2025</div>
+          <div class="ex-detail">
+            <span>Expert long terme — Formation professionnelle et dialogue institutionnel public-privé</span>
+            <span style="margin-top:.3rem;color:#8a5a10">34 mois · Tunis (+ Sousse, Nabeul) · Financement AFD</span>
+          </div>
+        </div>
+        <div class="ex-bloc" style="margin-top:.5rem;">
+          <div class="ex-title">💼 Gouvernance investissement public · Tunis</div>
+          <div class="ex-detail">
+            <span>Appui en communication — Projet gouvernance de l'investissement public en Tunisie</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Conseil + communication stratégique · Mission courte</span>
+          </div>
+        </div>
+        <div class="ex-bloc" style="margin-top:.5rem;">
+          <div class="ex-title">🏢 Renforcement ATIC · Tunisie</div>
+          <div class="ex-detail">
+            <span>Renforcement des capacités de l'Association Tunisienne des Investisseurs en Capital</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Formation + accompagnement · Cabinet ou expert</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Forte présence en Tunisie · Tout en français · Gouvernance, formation, évaluation · Partenariat Franco-Tunisien très actif · Missions régulières</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Délais de réponse parfois courts. Visiter aussi Jamaity pour capter toutes leurs opportunités tunisiennes.</div>
+      </div>
+      <a class="vbtn" href="https://www.expertisefrance.fr/fr/opportunites" target="_blank">Voir les opportunités →</a>
+    </div>
+  </div>
+
+  <!-- 5 BAFD -->
+  <div class="card h" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">05 · Priorité haute</div>
+          <div class="cname">Banque Africaine de Dév.</div>
+          <div class="curl">afdb.org</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d doff"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> AMI consultant — Audit environnemental et social, Programme PAEPR II · Tunisie 2025</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">La BAfD finance des centaines de projets à travers l'Afrique et publie directement ses appels d'offres de consultance. Institution africaine de référence pour les missions de conseil, audit et gouvernance. La Tunisie est un pays membre actif avec plusieurs projets en cours.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Exemples réels BAfD</div>
+        <div class="ex-bloc">
+          <div class="ex-title">🌿 BAfD · Tunisie 2025</div>
+          <div class="ex-detail">
+            <span>AMI — Recrutement consultant individuel pour audit environnemental et social (Programme PAEPR II)</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Audit · Financement BAfD · Tunisie</span>
+          </div>
+        </div>
+        <div class="ex-bloc" style="margin-top:.5rem;">
+          <div class="ex-title">📊 BAfD · RDC 2025</div>
+          <div class="ex-detail">
+            <span>Assistance technique — Structuration des acteurs des chaînes de valeur agricoles en coopératives</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Conseil · Renforcement institutionnel · Afrique centrale</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Source officielle · Missions conseil, audit, gouvernance · Couvre toute l'Afrique · Budgets importants · Notifications email disponibles</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Compétition internationale intense. Certains appels exigent un enregistrement préalable comme consultant BAfD.</div>
+      </div>
+      <a class="vbtn" href="https://www.afdb.org/fr/projets-et-operations/passation-de-marches" target="_blank">Voir les appels BAfD →</a>
+    </div>
+  </div>
+
+  <!-- 6 ENABEL -->
+  <div class="card m" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">06 · Priorité moyenne</div>
+          <div class="cname">Enabel</div>
+          <div class="curl">enabel.be</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d doff"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> Programme GGSP-CALAO — Gouvernance corridors transport Afrique de l'Ouest · UE + Enabel 2025–2029</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">Agence belge de développement très active en Afrique francophone. Travaille avec l'UE et implémente des projets de gouvernance et formation. Les cabinets privés sont régulièrement sollicités pour les missions de conseil et renforcement.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Exemple réel Enabel</div>
+        <div class="ex-bloc">
+          <div class="ex-title">🛣️ Programme GGSP-CALAO · 2025–2029</div>
+          <div class="ex-detail">
+            <span>Gouvernance des corridors de transport — harmonisation, formation et politiques commerciales Afrique de l'Ouest</span>
+            <span style="margin-top:.3rem;color:#8a5a10">45M€ · UE + Enabel + Expertise France · Afrique de l'Ouest</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Afrique francophone bien couverte · Gouvernance et formation · Financement UE garanti · Missions bien structurées</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Volume modéré d'appels. Naviguer vers enabel.be/content/tenders et vérifier régulièrement.</div>
+      </div>
+      <a class="vbtn" href="https://www.enabel.be/content/tenders" target="_blank">Voir les appels Enabel →</a>
+    </div>
+  </div>
+
+  <!-- 7 TRADEMARK -->
+  <div class="card m" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">07 · Priorité moyenne</div>
+          <div class="cname">TradeMark Africa</div>
+          <div class="curl">trademarkafrica.com</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d doff"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> Appels conseil stratégique, commerce africain et politiques publiques · Mai 2025 · Plusieurs lots</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">Organisation spécialisée dans le commerce et les politiques africaines. Publie des appels en conseil stratégique, développement institutionnel et politiques publiques — directement dans votre domaine Conseil & Gouvernance.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Exemple réel TradeMark Africa</div>
+        <div class="ex-bloc">
+          <div class="ex-title">🌍 TradeMark Africa · Mai 2025</div>
+          <div class="ex-detail">
+            <span>Plusieurs appels : conseil stratégique, politiques commerciales et développement institutionnel africain</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Délai : 8–13 mai 2025 · Plusieurs lots · Afrique de l'Est</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Conseil stratégique et policy · Missions à haute valeur · Source directe sans intermédiaire · Gratuit</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Principalement Afrique de l'Est. Volume faible mais qualité élevée. Visiter 1x/mois.</div>
+      </div>
+      <a class="vbtn" href="https://trademarkafrica.com/procurement" target="_blank">Voir les appels TMA →</a>
+    </div>
+  </div>
+
+  <!-- 8 RELIEFWEB -->
+  <div class="card m" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">08 · Priorité moyenne</div>
+          <div class="cname">ReliefWeb</div>
+          <div class="curl">reliefweb.int</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d doff"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> Consultant gouvernance et capacity building — ONU / ONG internationales · Afrique 2025–2026</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">Portail ONU dédié aux opportunités de développement. Publie des missions de consulting, gouvernance et formation pour toute l'Afrique. Peu exploité par les cabinets francophones — faible concurrence sur les appels qui vous correspondent.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Couverture Afrique complète · Consulting + formation + gouvernance · Gratuit · Peu connu des cabinets francophones</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Principalement en anglais. Orienté ONG humanitaire. Filtrer par "consultancy" et "governance".</div>
+      </div>
+      <a class="vbtn" href="https://reliefweb.int/jobs" target="_blank">Voir les missions →</a>
+    </div>
+  </div>
+
+  <!-- 9 TUNEPS -->
+  <div class="card h" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">09 · Référence officielle</div>
+          <div class="cname">TUNEPS</div>
+          <div class="curl">tuneps.tn</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d doff"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">📄</div>
+        <div class="ex-text"><strong>Ex. récent :</strong> Étude d'opportunités internet très haut débit par satellite en Tunisie — INT · 2025</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi ce choix</div>
+        <div class="it">Source officielle de l'État tunisien. Tous les marchés publics y sont publiés légalement. Incontournable pour ne manquer aucun appel public en Tunisie — ministères, établissements publics, collectivités locales.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Exemples réels TUNEPS</div>
+        <div class="ex-bloc">
+          <div class="ex-title">📡 Instance Nationale Télécommunications · 2025</div>
+          <div class="ex-detail">
+            <span>Étude d'opportunités — introduction de l'internet très haut débit par satellite en Tunisie</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Étude · Analyse · Recommandations stratégiques · État tunisien</span>
+          </div>
+        </div>
+        <div class="ex-bloc" style="margin-top:.5rem;">
+          <div class="ex-title">📊 INT Tunisie · 2025</div>
+          <div class="ex-detail">
+            <span>Enquête terrain — satisfaction utilisateurs et compétences numériques en Tunisie</span>
+            <span style="margin-top:.3rem;color:#8a5a10">Sondage + analyse · Financement public</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">100% des marchés publics tunisiens · Gratuit · Source légale officielle · Tous ministères et EPA</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Public uniquement. Nécessite un compte fournisseur et une signature électronique pour soumissionner.</div>
+      </div>
+      <a class="vbtn" href="https://www.tuneps.tn" target="_blank">Accéder à TUNEPS →</a>
+    </div>
+  </div>
+
+  <!-- 10 GOOGLE ALERTS -->
+  <div class="card h" onclick="toggle(this)">
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-left">
+          <div class="cn">10 · Filet de sécurité</div>
+          <div class="cname">Google Alerts</div>
+          <div class="curl">google.com/alerts</div>
+        </div>
+        <div class="ch-right">
+          <span class="ctag cfree">Gratuit</span>
+          <div class="dots"><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div><div class="d don"></div></div>
+          <div class="chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-preview">
+        <div class="ex-icon">🔔</div>
+        <div class="ex-text"><strong>Rôle :</strong> Surveille tout le web en temps réel — capte les appels publiés sur des sites non référencés ailleurs</div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="ib">
+        <div class="il il-why">Pourquoi indispensable</div>
+        <div class="it">Google surveille l'intégralité du web en temps réel. Il capte les appels publiés sur TUNEPS, les ministères, les journaux officiels, les ONG locales — tout ce que les autres plateformes peuvent manquer. C'est votre assurance zéro-raté.</div>
+      </div>
+      <div class="ib">
+        <div class="il il-ex">Les 5 alertes à configurer</div>
+        <div class="ex-bloc">
+          <div class="ex-detail" style="font-family:monospace;font-size:.67rem;line-height:2;">
+            <span>"appel d'offres" gouvernance conseil Tunisie</span>
+            <span>"appel d'offres" formation politiques publiques Afrique</span>
+            <span>"tender" governance advisory Africa consulting</span>
+            <span>"appel d'offres" audit évaluation diagnostic</span>
+            <span>"RFP" capacity building Afrique</span>
+          </div>
+        </div>
+      </div>
+      <div class="ib">
+        <div class="il il-str">Points forts</div>
+        <div class="it">Couvre 100% du web · Gratuit · Alertes instantanées par email · Capte ce que les autres sources manquent</div>
+      </div>
+      <div class="ib">
+        <div class="il il-lim">À savoir</div>
+        <div class="it">Quelques minutes de configuration suffisent. Choisir "Au fur et à mesure" pour recevoir les alertes en temps réel.</div>
+      </div>
+      <a class="vbtn" href="https://www.google.com/alerts" target="_blank">Configurer les alertes →</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- VÉRITÉ TERRAIN -->
+<div class="truth">
+  <div class="th">
+    <div class="th-title">Ce qu'il faut savoir</div>
+    <div class="th-sub">3 réalités importantes sur le marché des appels d'offres privés.</div>
+  </div>
+  <div class="ti">
+    <div class="ti-ico">⚠️</div>
+    <div class="ti-txt"><strong>60 à 80% des missions privées</strong> en Tunisie passent par le réseau. Les appels d'offres formalisés en ligne sont une minorité du marché — mais c'est la partie la plus accessible et structurée.</div>
+  </div>
+  <div class="ti">
+    <div class="ti-ico">💡</div>
+    <div class="ti-txt">Les meilleures sources "privées" sont des <strong>organisations internationales</strong> — GIZ, Expertise France, ONG — qui opèrent en Tunisie et publient leurs missions en ligne.</div>
+  </div>
+  <div class="ti">
+    <div class="ti-ico">✅</div>
+    <div class="ti-txt">Ces <strong>10 sources sont 100% gratuites</strong>. Des plateformes payantes plus puissantes (Devex, DevelopmentAid) peuvent être ajoutées selon les besoins.</div>
+  </div>
+</div>
+
+<!-- AUTOMATISATION -->
+<div style="margin:0 1.25rem 2rem;">
+  <div style="font-family:'Libre Baskerville',serif;font-size:1.05rem;color:var(--ink);margin-bottom:.4rem;padding-top:.25rem;">Recevoir les alertes automatiquement</div>
+  <div style="font-size:.75rem;color:var(--muted);line-height:1.7;margin-bottom:1rem;">Pour les sources qui le permettent, il est possible de recevoir un email dès qu'un nouvel appel d'offres correspondant à vos domaines est publié — sans avoir à visiter chaque site.</div>
+
+  <div style="display:flex;flex-direction:column;gap:.6rem;">
+
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;display:flex;gap:.85rem;align-items:flex-start;">
+      <div style="font-size:1.1rem;flex-shrink:0;">📬</div>
+      <div>
+        <div style="font-size:.75rem;font-weight:600;color:var(--ink);margin-bottom:.25rem;">Jamaity · Coordination SUD · ReliefWeb</div>
+        <div style="font-size:.72rem;color:var(--muted);line-height:1.6;">Ces 3 sources proposent nativement des <strong style="color:var(--sage)">alertes email</strong> — il suffit de s'inscrire et de choisir ses domaines. Les nouveaux appels arrivent directement dans la boite mail.</div>
+      </div>
+    </div>
+
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;display:flex;gap:.85rem;align-items:flex-start;">
+      <div style="font-size:1.1rem;flex-shrink:0;">🔔</div>
+      <div>
+        <div style="font-size:.75rem;font-weight:600;color:var(--ink);margin-bottom:.25rem;">Google Alerts · BAfD · TUNEPS</div>
+        <div style="font-size:.72rem;color:var(--muted);line-height:1.6;">Google Alerts envoie une alerte email dès qu'un AO correspondant à vos mots-clés apparaît sur le web. BAfD et TUNEPS proposent aussi leurs propres notifications email depuis leur espace personnel.</div>
+      </div>
+    </div>
+
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem;display:flex;gap:.85rem;align-items:flex-start;">
+      <div style="font-size:1.1rem;flex-shrink:0;">⚡</div>
+      <div>
+        <div style="font-size:.75rem;font-weight:600;color:var(--ink);margin-bottom:.25rem;">Possibilité d'aller plus loin</div>
+        <div style="font-size:.72rem;color:var(--muted);line-height:1.6;">Pour les sources sans alerte native (GIZ, Enabel, TradeMark Africa), il est possible de mettre en place un système qui surveille ces sites automatiquement et envoie un <strong style="color:var(--gold)">email de synthèse quotidien</strong> regroupant toutes les nouvelles opportunités en un seul message.</div>
+      </div>
+    </div>
+
+    <div style="background:var(--gold-light);border:1px solid var(--gold-border);border-radius:12px;padding:1rem;display:flex;gap:.85rem;align-items:flex-start;">
+      <div style="font-size:1.1rem;flex-shrink:0;">🎯</div>
+      <div>
+        <div style="font-size:.75rem;font-weight:600;color:var(--ink);margin-bottom:.25rem;">Résultat final possible</div>
+        <div style="font-size:.72rem;color:#6b4a10;line-height:1.6;">Un seul email chaque matin avec <strong>tous les nouveaux appels d'offres pertinents</strong> des 10 sources — triés, filtrés par domaine, avec le lien direct vers chaque opportunité. Zéro visite manuelle nécessaire.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="ftr">
+  <div class="ftr-txt">
+    <span class="ftr-gold">10 sources · 100% gratuites</span><br>
+    Tunisie · Afrique · Conseil · Formation · Études
+  </div>
+</div>
+
+<script>
+function toggle(card) {
+  const body = card.querySelector('.cb');
+  const chev = card.querySelector('.chev');
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.cb').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.chev').forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    body.classList.add('open');
+    chev.classList.add('open');
+    setTimeout(() => card.scrollIntoView({ behavior:'smooth', block:'nearest' }), 150);
+  }
+}
+</script>
+</body>
+</html>
